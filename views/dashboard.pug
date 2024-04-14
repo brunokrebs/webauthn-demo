@@ -1,9 +1,90 @@
 extends layout
 
+block title
+  title Dashboard
+
 block content
   .webauthn-container
     .card
       .card-body
-        h5.card-title Dashboard
-        p.card-text Welcome to the dashboard, #{user.email}!
-        a.btn.btn-primary(href='/logout') Logout
+        h3.card-title Dashboard
+        p.card-text Welcome to the dashboard,
+          strong &nbsp;#{user.email}!
+        p.card-text How about we create a webauthn credential for you?
+        div.d-flex.justify-content-start.gap-3
+          button.btn.btn-primary(onclick='webauthn()') Create WebAuthn Credential
+          a.btn.btn-default(href='/logout') Logout
+        
+  script.
+    function webauthn() {
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+
+      const userId = new Uint8Array(8);
+      window.crypto.getRandomValues(userId);
+      
+      const publicKey = {
+        challenge: new Uint8Array(challenge),
+        rp: {
+          name: 'WebAuthn Demo', // Relying party name
+          id: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',     // Relying on party ID
+        },
+        user: {
+          id: userId,
+          name: 'bruno@mimic.com',
+          displayName: 'Bruno Krebs',
+        },
+        pubKeyCredParams: [
+          {
+            type: "public-key",
+            alg: -7 // "ES256" as registered in the IANA COSE Algorithms registry
+          },
+          {
+            type: "public-key",
+            alg: -257 // Value registered by this specification for "RS256"
+          }
+        ],
+        timeout: 60000, // 1-minute timeout
+        attestation: 'indirect', // Attestation type
+      };
+
+      // Note: The following call will cause the authenticator to display UI.
+      navigator.credentials.create({ publicKey })
+        .then((credential) => {
+          // Response object has information about the authenticator data, 
+          // public key, transport mechanisms, and more.
+          const response = credential.response;
+          console.log('====== - response:', response);
+
+          // Access attestationObject ArrayBuffer
+          const attestationObj = response.attestationObject;
+          console.log('====== - attestationObj:', attestationObj);
+
+          // Access client JSON
+          const clientJSON = response.clientDataJSON;
+          console.log('====== - clientJSON:', clientJSON);
+
+          // Return authenticator data ArrayBuffer
+          const authenticatorData = response.getAuthenticatorData();
+          console.log('====== - authenticatorData:', authenticatorData);
+
+          // Return public key ArrayBuffer
+          const pk = response.getPublicKey();
+          console.log('====== - pk:', pk);
+
+          // Return public key algorithm identifier
+          const pkAlgo = response.getPublicKeyAlgorithm();
+          console.log('====== - pkAlgo:', pkAlgo);
+
+          // Return permissible transports array
+          const transports = response.getTransports();
+          console.log('====== - transports:', transports);
+          
+          // Send the credential information to the server for storage
+          return credential;
+        })
+        .catch((error) => {
+          console.log(error);
+          alert("Something went wrong: " + error);
+        });
+    }
