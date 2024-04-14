@@ -32,7 +32,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  console.log('====== - req.body:', req.body);
   const email = req.body.email;
   const password = req.body.password;
 
@@ -64,7 +63,6 @@ const authenticatedMiddleware = (req, res, next) => {
 app.get('/dashboard', authenticatedMiddleware, (req, res) => {
   const email = sessions[req.cookies.sessionId];
   const user = users[email];
-  console.log('====== - user:', user);
   res.render('dashboard', { user });
 });
 
