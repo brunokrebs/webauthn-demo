@@ -12,7 +12,8 @@ block content
           strong &nbsp;#{user.email}!
         p.card-text How about we create a webauthn credential for you?
         div.d-flex.justify-content-start.gap-3
-          button.btn.btn-primary(onclick='webauthn()') Create WebAuthn Credential
+          if !user.credential
+            button.btn.btn-primary(onclick='webauthn()') Create WebAuthn Credential
           a.btn.btn-default(href='/logout') Logout
         
   script.
@@ -50,41 +51,41 @@ block content
 
       // Note: The following call will cause the authenticator to display UI.
       navigator.credentials.create({ publicKey })
-        .then((credential) => {
-          // Response object has information about the authenticator data, 
-          // public key, transport mechanisms, and more.
-          const response = credential.response;
-          console.log('====== - response:', response);
-
-          // Access attestationObject ArrayBuffer
-          const attestationObj = response.attestationObject;
-          console.log('====== - attestationObj:', attestationObj);
-
-          // Access client JSON
-          const clientJSON = response.clientDataJSON;
-          console.log('====== - clientJSON:', clientJSON);
-
-          // Return authenticator data ArrayBuffer
-          const authenticatorData = response.getAuthenticatorData();
-          console.log('====== - authenticatorData:', authenticatorData);
-
-          // Return public key ArrayBuffer
-          const pk = response.getPublicKey();
-          console.log('====== - pk:', pk);
-
-          // Return public key algorithm identifier
-          const pkAlgo = response.getPublicKeyAlgorithm();
-          console.log('====== - pkAlgo:', pkAlgo);
-
-          // Return permissible transports array
-          const transports = response.getTransports();
-          console.log('====== - transports:', transports);
-          
-          // Send the credential information to the server for storage
-          return credential;
-        })
+        .then(sendCredentialToServer)
         .catch((error) => {
           console.log(error);
           alert("Something went wrong: " + error);
         });
+    }
+
+    async function sendCredentialToServer(credential) {
+      let attestationObject = credential.response.attestationObject;
+      let clientDataJSON = credential.response.clientDataJSON;
+      
+      const dataToSend = {
+        id: credential.id,
+        attestationObject: arrayBufferToBase64(attestationObject),
+        clientDataJSON: arrayBufferToBase64(clientDataJSON)
+      };
+
+      fetch('/api/register-credential', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch((error) => console.error('Error:', error));
+    }
+
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+      }
+      return window.btoa(binary);
     }

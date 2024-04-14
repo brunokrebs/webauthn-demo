@@ -1,0 +1,12 @@
+{
+  "bruno@mimic.com": {
+    "email": "bruno@mimic.com",
+    "password": "12--3!4#5@6",
+    "name": "Bruno"
+  },
+  "johns@mimic.com": {
+    "email": "johns@mimic.com",
+    "password": "12--3!4#5@6",
+    "name": "John"
+  }
+}

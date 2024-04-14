@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -12,20 +13,8 @@ app.use(cookieParser());
 
 app.set('view engine', 'pug');
 
-const users = {
-  'bruno@mimic.com': {
-    email: 'bruno@mimic.com',
-    password: '12--3!4#5@6',
-    name: 'Bruno',
-  },
-  'johns@mimic.com': {
-    email: 'johns@mimic.com',
-    password: '12--3!4#5@6',
-    name: 'John',
-  },
-};
-
-const sessions = {};
+const users = require('./database/users.json');
+const sessions = require('./database/sessions.json');
 
 app.get('/', (req, res) => {
   res.render('index');
@@ -38,12 +27,33 @@ app.post('/login', (req, res) => {
   if (users[email] && users[email].password === password) {
     const sessionId = Math.random().toString(36).substring(7);
     sessions[sessionId] = email;
-    res.cookie('sessionId', sessionId);
-    res.redirect('/dashboard');
-    return;
+    
+    fs.writeFile('./src/database/sessions.json', JSON.stringify(sessions, null, 2), (err) => {
+      if (err) {
+        console.error('Error updating sessions.json:', err);
+        res.redirect('/?error=login-failed');
+        return;
+      }
+      res.cookie('sessionId', sessionId);
+      res.redirect('/dashboard');
+    });
   }
+});
 
-  res.redirect('/?error=login-failed');
+app.post('/api/register-credential', (req, res) => {
+  const credentials = req.body;
+  const email = sessions[req.cookies.sessionId];
+  const user = users[email];
+  user.credential = credentials;
+
+  fs.writeFile('./src/database/users.json', JSON.stringify(users, null, 2), (err) => {
+    if (err) {
+      console.error('Error updating users.json:', err);
+      res.json({ message: 'Failed' });
+      return;
+    }
+    res.json({ message: 'Success' });
+  });
 });
 
 const authenticatedMiddleware = (req, res, next) => {
@@ -77,9 +87,14 @@ app.get('/logout', (req, res) => {
   delete sessions[sessionId];
   res.clearCookie('sessionId');
   res.redirect('/');
+  fs.writeFile('./src/database/sessions.json', JSON.stringify(sessions, null, 2), (err) => {
+    if (err) {
+      console.error('Error updating sessions.json:', err);
+    }
+  });
 });
 
 // Start the server
-app.listen(port, () => {;
+app.listen(port, () => {
   console.log(`Server is running: http://localhost:${port}`);
 });
