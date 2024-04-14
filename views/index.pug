@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  .webauthn-container
+      .card
+        .card-body
+          h5.card-title Login
+          form(action='/login', method='POST')
+            .mb-3
+              label.form-label(for='email') Email
+              input.form-control(type='email', id='email', name='email', value='bruno@mimic.com', placeholder='Enter your email')
+            .mb-3
+              label.form-label(for='password') Password
+              input.form-control(type='password', id='password', name='password', value='12--3!4#5@6', placeholder='Enter your password')
+            button.btn.btn-primary(type='submit') Submit

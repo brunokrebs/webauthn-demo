@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  .webauthn-container
+    .card
+      .card-body
+        h5.card-title Dashboard
+        p.card-text Welcome to the dashboard, #{user.email}!
+        a.btn.btn-primary(href='/logout') Logout
