@@ -1,10 +1,12 @@
 {
   "bruno@mimic.com": {
+    "id": "c8f4c3da-a171-49da-a78b-3c13fd5f449c",
     "email": "bruno@mimic.com",
     "password": "12--3!4#5@6",
     "name": "Bruno"
   },
   "johns@mimic.com": {
+    "id": "06d28328-08b9-47ff-ac51-bee62afdf8f5",
     "email": "johns@mimic.com",
     "password": "12--3!4#5@6",
     "name": "John"

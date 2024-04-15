@@ -5,14 +5,102 @@ block title
 
 block content
   .webauthn-container
-      .card
-        .card-body
-          h5.card-title Login
-          form(action='/login', method='POST')
-            .mb-3
-              label.form-label(for='email') Email
-              input.form-control(type='email', id='email', name='email', value='bruno@mimic.com', placeholder='Enter your email')
-            .mb-3
-              label.form-label(for='password') Password
-              input.form-control(type='password', id='password', name='password', value='12--3!4#5@6', placeholder='Enter your password')
-            button.btn.btn-primary(type='submit') Submit
+    .card
+      .card-body
+        h5.card-title Login
+        div.mb-3
+          label.form-label(for='email') Email
+          input.form-control(type='email' id='email' name='email' value='bruno@mimic.com' placeholder='Enter your email')
+        div#password-section.d-none
+          label.form-label(for='password') Password
+          input.form-control(type='password' id='password' name='password' value='12--3!4#5@6' placeholder='Enter your password')
+        div.form-text.text-end.mt-3.flex
+          button#sign-in-with-password.btn.btn-link(type='button' onclick='togglePasswordVisibility();') Sign In with Password
+          button#sign-in-with-webauthn.btn.btn-link.d-none(type='button' onclick='togglePasswordVisibility();') Sign In with WebAuthn
+          button.btn.btn-primary(type='button' onclick='submit();') Sign In
+
+  script.
+    let signInWithPassword = false;
+
+    function togglePasswordVisibility() {
+      const passwordSection = document.getElementById('password-section');
+      const signInWithPasswordButton = document.getElementById('sign-in-with-password');
+      const signInWithWebAuthnButton = document.getElementById('sign-in-with-webauthn');
+      passwordSection.classList.toggle('d-none');
+      signInWithPasswordButton.classList.toggle('d-none');
+      signInWithWebAuthnButton.classList.toggle('d-none');
+      signInWithPassword = !signInWithPassword;
+    }
+
+    function submit() {
+      if (signInWithPassword) return signInPassword();
+      return signInWebAuthn();
+    }
+
+    function signInWebAuthn() {
+      const email = document.getElementById('email').value;
+      fetch('/webauthn/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email }),
+      })
+        .then((response) => {
+          if (response.ok) return response.json();
+          throw response;
+        })
+        .then((responsePayload) => {
+          return navigator.credentials.get({
+            publicKey: {
+              challenge: Uint8Array.from(atob("VMUn8NmCuSOHhSSvvOCVhlv5OoRnmi7S2O2sKsPTNzE="), c => c.charCodeAt(0)), // TODO random, from the server
+              rpId: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
+              allowCredentials: [
+                {
+                  type: "public-key",
+                  id: Uint8Array.from(atob(responsePayload.credentialId), c => c.charCodeAt(0)),
+                }
+              ],
+              userVerification: 'discouraged', // TODO change to 'required'
+            }
+          });
+        })
+        .then((aa) => {
+          console.log('====== - aa:', aa);
+          //- return fetch('/webauthn/finish', {
+          //-   method: 'POST',
+          //-   headers: {
+          //-     'Content-Type': 'application/json'
+          //-   },
+          //-   body: JSON.stringify(aa)
+          //- });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Something went wrong');
+        });
+    }
+
+    function signInPassword() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const payload = { email, password };
+      fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      })
+        .then(response => {
+          if (response.ok) {
+            window.location.href = '/dashboard';
+          } else {
+            alert('Invalid email or password');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Something went wrong');
+        });
+    }

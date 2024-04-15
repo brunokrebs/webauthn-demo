@@ -13,8 +13,8 @@ app.use(cookieParser());
 
 app.set('view engine', 'pug');
 
-const users = require('./database/users.json');
-const sessions = require('./database/sessions.json');
+const users = require('../database/users.json');
+const sessions = require('../database/sessions.json');
 
 app.get('/', (req, res) => {
   res.render('index');
@@ -28,25 +28,41 @@ app.post('/login', (req, res) => {
     const sessionId = Math.random().toString(36).substring(7);
     sessions[sessionId] = email;
     
-    fs.writeFile('./src/database/sessions.json', JSON.stringify(sessions, null, 2), (err) => {
+    fs.writeFile('./database/sessions.json', JSON.stringify(sessions, null, 2), (err) => {
       if (err) {
         console.error('Error updating sessions.json:', err);
         res.redirect('/?error=login-failed');
         return;
       }
       res.cookie('sessionId', sessionId);
-      res.redirect('/dashboard');
+      res.json({ message: 'Success' });
     });
   }
 });
 
-app.post('/api/register-credential', (req, res) => {
+app.post('/webauthn/start', (req, res) => {
+  const email = req.body.email;
+  const user = users[email];
+  const challenge = 'VMUn8NmCuSOHhSSvvOCVhlv5OoRnmi7S2O2sKsPTNzE=';
+  user.webauthnChallenge = challenge;
+
+  fs.writeFile('./database/users.json', JSON.stringify(users, null, 2), (err) => {
+    if (err) {
+      console.error('Error updating users.json:', err);
+      res.json({ message: 'Failed' });
+      return;
+    }
+    res.json({ message: 'Success', challenge, credentialId: user.credential?.id });
+  });
+});
+
+app.post('/register-credential', (req, res) => {
   const credentials = req.body;
   const email = sessions[req.cookies.sessionId];
   const user = users[email];
   user.credential = credentials;
 
-  fs.writeFile('./src/database/users.json', JSON.stringify(users, null, 2), (err) => {
+  fs.writeFile('./database/users.json', JSON.stringify(users, null, 2), (err) => {
     if (err) {
       console.error('Error updating users.json:', err);
       res.json({ message: 'Failed' });
@@ -87,7 +103,7 @@ app.get('/logout', (req, res) => {
   delete sessions[sessionId];
   res.clearCookie('sessionId');
   res.redirect('/');
-  fs.writeFile('./src/database/sessions.json', JSON.stringify(sessions, null, 2), (err) => {
+  fs.writeFile('./database/sessions.json', JSON.stringify(sessions, null, 2), (err) => {
     if (err) {
       console.error('Error updating sessions.json:', err);
     }

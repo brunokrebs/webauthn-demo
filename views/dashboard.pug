@@ -18,38 +18,43 @@ block content
         
   script.
     function webauthn() {
-      const challenge = new Uint8Array(32);
-      window.crypto.getRandomValues(challenge);
-
-      const userId = new Uint8Array(8);
-      window.crypto.getRandomValues(userId);
+      const challenge = 'VMUn8NmCuSOHhSSvvOCVhlv5OoRnmi7S2O2sKsPTNzE='; // TODO random, but from browser
       
       const publicKey = {
-        challenge: new Uint8Array(challenge),
+        challenge: Uint8Array.from(atob(challenge), c => c.charCodeAt(0)),
         rp: {
-          name: 'WebAuthn Demo', // Relying party name
-          id: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',     // Relying on party ID
+          name: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
+          id: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
         },
         user: {
-          id: userId,
-          name: 'bruno@mimic.com',
-          displayName: 'Bruno Krebs',
+          id: new Uint8Array("#{user.id}".split("").map(c => c.charCodeAt(0))),
+          name: "#{user.email}",
+          displayName: "#{user.name}",
         },
         pubKeyCredParams: [
           {
             type: "public-key",
-            alg: -7 // "ES256" as registered in the IANA COSE Algorithms registry
+            alg: -7,
           },
           {
             type: "public-key",
-            alg: -257 // Value registered by this specification for "RS256"
+            alg: -257,
           }
         ],
-        timeout: 60000, // 1-minute timeout
-        attestation: 'indirect', // Attestation type
+        excludeCredentials: [],
+        timeout: 60000,
+        attestation: 'none',
+        authenticatorSelection: {
+          residentKey: 'preferred',
+          requireResidentKey: false,
+          userVerification: 'preferred',
+        },
+        hints: [],
+        extensions: {
+          credProps: true
+        },
       };
 
-      // Note: The following call will cause the authenticator to display UI.
       navigator.credentials.create({ publicKey })
         .then(sendCredentialToServer)
         .catch((error) => {
@@ -61,14 +66,17 @@ block content
     async function sendCredentialToServer(credential) {
       let attestationObject = credential.response.attestationObject;
       let clientDataJSON = credential.response.clientDataJSON;
+
+      console.log('credential.rawId:', arrayBufferToBase64(credential.rawId));
+      console.log('credential.id:', credential.id);
       
       const dataToSend = {
-        id: credential.id,
+        id: arrayBufferToBase64(credential.rawId),
         attestationObject: arrayBufferToBase64(attestationObject),
         clientDataJSON: arrayBufferToBase64(clientDataJSON)
       };
 
-      fetch('/api/register-credential', {
+      fetch('/register-credential', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
