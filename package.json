@@ -8,13 +8,16 @@
     "test": "test"
   },
   "scripts": {
-    "dev": "nodemon --watch src src/index.js",
+    "dev": "nodemon --watch ./src/**/*.js src/index.js",
     "start": "node src"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@simplewebauthn/server": "^10.0.0",
+    "base64url": "^3.0.1",
+    "cbor": "^9.0.2",
     "cookie-parser": "^1.4.6",
     "express": "^4.19.2",
     "nodemon": "^3.1.0",

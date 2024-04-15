@@ -13,12 +13,13 @@ block content
           input.form-control(type='email' id='email' name='email' value='bruno@mimic.com' placeholder='Enter your email')
         div#password-section.d-none
           label.form-label(for='password') Password
-          input.form-control(type='password' id='password' name='password' value='12--3!4#5@6' placeholder='Enter your password')
+          input.form-control(type='password' id='password' name='password' value='somePassword' placeholder='Enter your password')
         div.form-text.text-end.mt-3.flex
           button#sign-in-with-password.btn.btn-link(type='button' onclick='togglePasswordVisibility();') Sign In with Password
           button#sign-in-with-webauthn.btn.btn-link.d-none(type='button' onclick='togglePasswordVisibility();') Sign In with WebAuthn
           button.btn.btn-primary(type='button' onclick='submit();') Sign In
 
+  script(src='https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js')
   script.
     let signInWithPassword = false;
 
@@ -50,30 +51,20 @@ block content
           if (response.ok) return response.json();
           throw response;
         })
-        .then((responsePayload) => {
-          return navigator.credentials.get({
-            publicKey: {
-              challenge: Uint8Array.from(atob("VMUn8NmCuSOHhSSvvOCVhlv5OoRnmi7S2O2sKsPTNzE="), c => c.charCodeAt(0)), // TODO random, from the server
-              rpId: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
-              allowCredentials: [
-                {
-                  type: "public-key",
-                  id: Uint8Array.from(atob(responsePayload.credentialId), c => c.charCodeAt(0)),
-                }
-              ],
-              userVerification: 'discouraged', // TODO change to 'required'
-            }
-          });
+        .then((credentialCreationOptions) => {
+          return SimpleWebAuthnBrowser.startRegistration(credentialCreationOptions);
         })
-        .then((aa) => {
-          console.log('====== - aa:', aa);
-          //- return fetch('/webauthn/finish', {
-          //-   method: 'POST',
-          //-   headers: {
-          //-     'Content-Type': 'application/json'
-          //-   },
-          //-   body: JSON.stringify(aa)
-          //- });
+        .then((attestationResponse) => {
+          return fetch('/webauthn/finish', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email,
+              data: attestationResponse,
+            }),
+          });
         })
         .catch(error => {
           console.error('Error:', error);
@@ -103,4 +94,26 @@ block content
           console.error('Error:', error);
           alert('Something went wrong');
         });
+    }
+
+    //- function arrayBufferToBase64(buffer) {
+    //-   let binary = '';
+    //-   const bytes = new Uint8Array(buffer);
+    //-   const len = bytes.byteLength;
+    //-   for (let i = 0; i < len; i++) {
+    //-       binary += String.fromCharCode(bytes[i]);
+    //-   }
+    //-   return window.btoa(binary);
+    //- }
+
+    function arrayBufferToBase64(buffer) {
+      var binary = '';
+      var bytes = new Uint8Array(buffer);
+      var len = bytes.byteLength;
+      for (var i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+      }
+      var base64 = window.btoa(binary);
+      // Convert to URL-safe base64
+      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }

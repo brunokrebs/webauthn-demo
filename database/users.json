@@ -2,13 +2,63 @@
   "bruno@mimic.com": {
     "id": "c8f4c3da-a171-49da-a78b-3c13fd5f449c",
     "email": "bruno@mimic.com",
-    "password": "12--3!4#5@6",
-    "name": "Bruno"
+    "password": "somePassword",
+    "name": "Bruno Krebs",
+    "credential": {
+      "credentialPublicKey": {
+        "0": 164,
+        "1": 1,
+        "2": 1,
+        "3": 3,
+        "4": 39,
+        "5": 32,
+        "6": 6,
+        "7": 33,
+        "8": 88,
+        "9": 32,
+        "10": 102,
+        "11": 222,
+        "12": 154,
+        "13": 139,
+        "14": 105,
+        "15": 119,
+        "16": 13,
+        "17": 110,
+        "18": 50,
+        "19": 130,
+        "20": 95,
+        "21": 99,
+        "22": 37,
+        "23": 226,
+        "24": 91,
+        "25": 126,
+        "26": 44,
+        "27": 141,
+        "28": 124,
+        "29": 250,
+        "30": 114,
+        "31": 186,
+        "32": 190,
+        "33": 13,
+        "34": 174,
+        "35": 108,
+        "36": 145,
+        "37": 8,
+        "38": 243,
+        "39": 19,
+        "40": 2,
+        "41": 228
+      },
+      "credentialID": "Zt6ai2l3DW4ygl9jJVPu3Rd8BkE3yXKGyxrk4qtoWGndLmR-G7b07lilv_BBiLGh",
+      "counter": 1
+    },
+    "webauthnChallenge": "VMUn8NmCuSOHhSSvvOCVhlv5OoRnmi7S2O2sKsPTNzE=",
+    "currentChallenge": null
   },
   "johns@mimic.com": {
     "id": "06d28328-08b9-47ff-ac51-bee62afdf8f5",
     "email": "johns@mimic.com",
-    "password": "12--3!4#5@6",
-    "name": "John"
+    "password": "somePassword",
+    "name": "John Schroeder"
   }
 }

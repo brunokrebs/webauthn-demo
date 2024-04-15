@@ -13,7 +13,7 @@ block content
         p.card-text How about we create a webauthn credential for you?
         div.d-flex.justify-content-start.gap-3
           if !user.credential
-            button.btn.btn-primary(onclick='webauthn()') Create WebAuthn Credential
+            button.btn.btn-primary#create-webauthn(onclick='webauthn()') Create WebAuthn Credential
           a.btn.btn-default(href='/logout') Logout
         
   script.
@@ -84,7 +84,11 @@ block content
         body: JSON.stringify(dataToSend),
       })
       .then(response => response.json())
-      .then(data => console.log('Success:', data))
+      .then(data => {
+        console.log('Success:', data);
+        alert('Key registered successfully.');
+        document.getElementById('create-webauthn').classList.toggle('d-none');
+      })
       .catch((error) => console.error('Error:', error));
     }
 
