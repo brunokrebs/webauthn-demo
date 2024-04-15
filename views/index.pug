@@ -19,7 +19,6 @@ block content
           button#sign-in-with-webauthn.btn.btn-link.d-none(type='button' onclick='togglePasswordVisibility();') Sign In with WebAuthn
           button.btn.btn-primary(type='button' onclick='submit();') Sign In
 
-  script(src='https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js')
   script.
     let signInWithPassword = false;
 
@@ -94,26 +93,4 @@ block content
           console.error('Error:', error);
           alert('Something went wrong');
         });
-    }
-
-    //- function arrayBufferToBase64(buffer) {
-    //-   let binary = '';
-    //-   const bytes = new Uint8Array(buffer);
-    //-   const len = bytes.byteLength;
-    //-   for (let i = 0; i < len; i++) {
-    //-       binary += String.fromCharCode(bytes[i]);
-    //-   }
-    //-   return window.btoa(binary);
-    //- }
-
-    function arrayBufferToBase64(buffer) {
-      var binary = '';
-      var bytes = new Uint8Array(buffer);
-      var len = bytes.byteLength;
-      for (var i = 0; i < len; i++) {
-          binary += String.fromCharCode(bytes[i]);
-      }
-      var base64 = window.btoa(binary);
-      // Convert to URL-safe base64
-      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }

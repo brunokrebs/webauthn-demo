@@ -1,4 +1,5 @@
 const users = require('../database/users.json');
+const sessions = require('../database/sessions.json');
 
 module.exports = {
   dashboard: (req, res) => {

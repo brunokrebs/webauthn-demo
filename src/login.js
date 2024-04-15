@@ -1,3 +1,7 @@
+const fs = require('fs');
+const users = require('../database/users.json');
+const sessions = require('../database/sessions.json');
+
 module.exports = {
   login: (req, res) => {
     const email = req.body.email;

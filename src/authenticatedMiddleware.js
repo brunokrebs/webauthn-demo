@@ -1,4 +1,4 @@
-const { sessions } = require('../database/sessions');
+const sessions = require('../database/sessions.json');
 
 module.exports = {
   authenticatedMiddleware: (req, res, next) => {

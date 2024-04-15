@@ -18,86 +18,39 @@ block content
         
   script.
     function webauthn() {
-      const challenge = 'VMUn8NmCuSOHhSSvvOCVhlv5OoRnmi7S2O2sKsPTNzE='; // TODO random, but from browser
-      
-      const publicKey = {
-        challenge: Uint8Array.from(atob(challenge), c => c.charCodeAt(0)),
-        rp: {
-          name: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
-          id: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
-        },
-        user: {
-          id: new Uint8Array("#{user.id}".split("").map(c => c.charCodeAt(0))),
-          name: "#{user.email}",
-          displayName: "#{user.name}",
-        },
-        pubKeyCredParams: [
-          {
-            type: "public-key",
-            alg: -7,
-          },
-          {
-            type: "public-key",
-            alg: -257,
-          }
-        ],
-        excludeCredentials: [],
-        timeout: 60000,
-        attestation: 'none',
-        authenticatorSelection: {
-          residentKey: 'preferred',
-          requireResidentKey: false,
-          userVerification: 'preferred',
-        },
-        hints: [],
-        extensions: {
-          credProps: true
-        },
-      };
-
-      navigator.credentials.create({ publicKey })
-        .then(sendCredentialToServer)
-        .catch((error) => {
-          console.log(error);
-          alert("Something went wrong: " + error);
-        });
-    }
-
-    async function sendCredentialToServer(credential) {
-      let attestationObject = credential.response.attestationObject;
-      let clientDataJSON = credential.response.clientDataJSON;
-
-      console.log('credential.rawId:', arrayBufferToBase64(credential.rawId));
-      console.log('credential.id:', credential.id);
-      
-      const dataToSend = {
-        id: arrayBufferToBase64(credential.rawId),
-        attestationObject: arrayBufferToBase64(attestationObject),
-        clientDataJSON: arrayBufferToBase64(clientDataJSON)
-      };
-
-      fetch('/register-credential', {
+      const email = "#{user.email}";
+      fetch('/webauthn/start', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify({ email }),
       })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
-        alert('Key registered successfully.');
-        document.getElementById('create-webauthn').classList.toggle('d-none');
-      })
-      .catch((error) => console.error('Error:', error));
-    }
-
-    function arrayBufferToBase64(buffer) {
-      let binary = '';
-      const bytes = new Uint8Array(buffer);
-      const len = bytes.byteLength;
-      for (let i = 0; i < len; i++) {
-          binary += String.fromCharCode(bytes[i]);
-      }
-      return window.btoa(binary);
+        .then((response) => {
+          if (response.ok) return response.json();
+          throw response;
+        })
+        .then((credentialCreationOptions) => {
+          return SimpleWebAuthnBrowser.startRegistration(credentialCreationOptions);
+        })
+        .then((attestationResponse) => {
+          return fetch('/webauthn/finish', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email,
+              data: attestationResponse,
+            }),
+          });
+        })
+        .then(() => {
+          alert('WebAuthn credential created successfully');
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Something went wrong');
+        });
     }
