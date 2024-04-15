@@ -39,7 +39,7 @@ block content
 
     function signInWebAuthn() {
       const email = document.getElementById('email').value;
-      fetch('/webauthn/start', {
+      fetch('/webauthn/login-options', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -50,20 +50,25 @@ block content
           if (response.ok) return response.json();
           throw response;
         })
-        .then((credentialCreationOptions) => {
-          return SimpleWebAuthnBrowser.startRegistration(credentialCreationOptions);
+        .then((loginOptions) => {
+          const useBrowserAutofill = false;
+          return SimpleWebAuthnBrowser.startAuthentication(loginOptions.data, useBrowserAutofill);
         })
-        .then((attestationResponse) => {
-          return fetch('/webauthn/finish', {
+        .then((assertionResponse) => {
+          return fetch('/webauthn/loginWebAuthn', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              email,
-              data: attestationResponse,
-            }),
+            body: JSON.stringify(assertionResponse),
           });
+        })
+        .then((response) => {
+          if (response.ok) {
+            window.location.href = '/dashboard';
+          } else {
+            alert('Invalid email or password');
+          }
         })
         .catch(error => {
           console.error('Error:', error);

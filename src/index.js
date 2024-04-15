@@ -6,6 +6,8 @@ const { finishDeviceRegister } = require('./finishDeviceRegister');
 const { authenticatedMiddleware } = require('./authenticatedMiddleware');
 const { dashboard } = require('./dashboard');
 const { logout } = require('./logout');
+const { loginOptions } = require('./loginOptions');
+const { loginWebAuthn } = require('./loginWebAuthn');
 
 const app = express();
 const port = 8080;
@@ -19,6 +21,9 @@ app.get('/', (_, res) => res.render('index'));
 app.post('/login', login);
 app.post('/webauthn/start', startDeviceRegister);
 app.post('/webauthn/finish', finishDeviceRegister);
+app.post('/webauthn/login-options', loginOptions);
+app.post('/webauthn/login', loginOptions);
+app.post('/webauthn/loginWebAuthn', loginWebAuthn);
 app.get('/dashboard', authenticatedMiddleware, dashboard);
 app.get('/logout', logout);
 
