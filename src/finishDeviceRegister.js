@@ -16,8 +16,8 @@ module.exports = {
       const verificationResult = await verifyRegistrationResponse({
         response: data,
         expectedChallenge: user.currentChallenge,
-        expectedOrigin: 'https://92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
-        expectedRPID: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
+        expectedOrigin: 'https://clever-stag-together.ngrok-free.app',
+        expectedRPID: 'clever-stag-together.ngrok-free.app',
       });
       if (!verificationResult.verified) {
         return res.status(403).end();

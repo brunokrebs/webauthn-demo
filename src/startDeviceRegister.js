@@ -10,8 +10,8 @@ module.exports = {
     const user = users[req.body.email];
     const challenge = base64url(crypto.randomBytes(20));
     const options = await generateRegistrationOptions({
-      rpName: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
-      rpID: '92aa-2804-14d-4c87-92a6-ac3b-ce8c-fab1-992d.ngrok-free.app',
+      rpName: 'clever-stag-together.ngrok-free.app',
+      rpID: 'clever-stag-together.ngrok-free.app',
       userID: isoUint8Array.fromUTF8String(user.id),
       userName: user.email,
       challenge,
